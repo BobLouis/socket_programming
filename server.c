@@ -39,7 +39,9 @@ int main(int argc, char const *argv[])
     char buffer[1024] = {0};
     char *hello = "Hello\n";
     char *del;
-
+    char ans[100];
+    char str[100];
+    int a, b, i;
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
@@ -79,6 +81,37 @@ int main(int argc, char const *argv[])
     while (1)
     {
         // write your code!
+        memset(buffer, '\0', sizeof(buffer) / sizeof(char));
+        valread = read(new_socket, buffer, 1024);
+        printf("%s\n", buffer);
+        for (i = 0; buffer[i] != ' ' && i < strlen(buffer); ++i)
+            str[i] = buffer[i];
+        str[i] = '\0';
+        if (!strcmp(str, "add"))
+        {
+            sscanf(buffer, "%s%d%d", str, &a, &b);
+            sprintf(ans, "%d", a + b);
+        }
+        else if (!strcmp(str, "abs"))
+        {
+            sscanf(buffer, "%s%d", str, &b);
+            sprintf(ans, "%d", abs(b));
+        }
+        else if (!strcmp(str, "mul"))
+        {
+            sscanf(buffer, "%s%d%d", str, &a, &b);
+            sprintf(ans, "%d", a * b);
+        }
+        else if (!strcmp(buffer, "kill"))
+        {
+            break;
+            return 0;
+        }
+        else
+        {
+            sprintf(ans, "Hello");
+        }
+        send(new_socket, ans, strlen(ans), 0);
     }
 
     return 0;

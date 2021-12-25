@@ -12,7 +12,8 @@ int main(int argc, char const *argv[])
     struct sockaddr_in serv_addr;
     char *hello = "Hello from client";
     char buffer[1024] = {0};
-
+    char a[2000];
+    int i = 0;
     usleep(500000);
 
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -40,6 +41,26 @@ int main(int argc, char const *argv[])
     while (1)
     {
         // write your code!
+        while (1)
+        {
+            scanf("%c", &a[i]);
+            if (a[i] == '\n')
+                break;
+            else
+                i++;
+        }
+        a[i] = '\0';
+        i = 0;
+        send(sock, a, strlen(a), 0);
+        if (!strcmp(a, "kill"))
+        {
+            break;
+        }
+        else
+        {
+            valread = read(sock, buffer, 1024);
+            printf("%s\n", buffer);
+        }
     }
 
     return 0;
