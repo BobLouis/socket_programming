@@ -86,6 +86,7 @@ int main(int argc, char const *argv[])
         // write your code!
         //offset the buffer
         memset(buffer, '\0', sizeof(buffer) / sizeof(char));
+        memset(ans, '\0', sizeof(ans) / sizeof(char));
         //read the messge from client to buffer
         valread = read(new_socket, buffer, 1024);
         // printf("%s\n", buffer);
