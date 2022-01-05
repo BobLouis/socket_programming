@@ -41,7 +41,10 @@ int main(int argc, char const *argv[])
     char *del;
     char ans[100];
     char str[100];
-    int a, b, i;
+    char num1[1000];
+    char num2[1000];
+    int i, overflow = 0;
+    long long a, b, x;
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
@@ -81,26 +84,98 @@ int main(int argc, char const *argv[])
     while (1)
     {
         // write your code!
+        //offset the buffer
         memset(buffer, '\0', sizeof(buffer) / sizeof(char));
+        //read the messge from client to buffer
         valread = read(new_socket, buffer, 1024);
-        printf("%s\n", buffer);
-        for (i = 0; buffer[i] != ' ' && i < strlen(buffer); ++i)
+        // printf("%s\n", buffer);
+        //read the command to str
+        //because the command will follow with the space so we read the buffer until read ' '
+        for (i = 0; buffer[i] != ' ' && i < 6; ++i)
             str[i] = buffer[i];
-        str[i] = '\0';
-        if (!strcmp(str, "add"))
+        str[i] = '\0';           //terminate str with '\0'
+        if (!strcmp(str, "add")) //add function
         {
-            sscanf(buffer, "%s%d%d", str, &a, &b);
-            sprintf(ans, "%d", a + b);
+            sscanf(buffer, "%s%s%s", str, num1, num2); //read the number in string to chack if the input overflow
+            sscanf(buffer, "%s%lld%lld", str, &a, &b); //read in the number
+            if (strlen(num1) >= 19)                    //check if input overflow
+            {                                          // long long range -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807
+                if (strlen(num1) >= 21)                //if string len > 21 exceed the max of long long
+                    overflow = 1;
+                else if (strlen(num1) == 20 && (num1[0] != '-' || a > 0)) //if the strlen == 20 check if the number is negative
+                    overflow = 1;
+                else if (strlen(num1) == 19 && a < 0) //if the strlen == 19 check if the number overflow if overflow the number will resent negative
+                    overflow = 1;
+            }
+            if (strlen(num2) >= 19)
+            {
+                if (strlen(num2) >= 21)
+                    overflow = 1;
+                else if (strlen(num2) == 20 && (num2[0] != '-' || b > 0))
+                    overflow = 1;
+                else if (strlen(num2) == 19 && b < 0)
+                    overflow = 1;
+            }
+            if (overflow)
+                sprintf(ans, "input overflow");
+            else
+            {
+                if (a >= 0 ? b > INT64_MAX - a : b < INT64_MIN - a) //check if a+b overflow
+                {
+                    if (a >= 0)
+                        sprintf(ans, "output overflow"); //determine overflow or underflow
+                    else
+                        sprintf(ans, "output underflow");
+                }
+                else
+                    sprintf(ans, "%lld", a + b); //if no overflow print the answer to ans
+            }
         }
         else if (!strcmp(str, "abs"))
         {
-            sscanf(buffer, "%s%d", str, &b);
-            sprintf(ans, "%d", abs(b));
+            sscanf(buffer, "%s%s", str, num2);
+            if (*num2 == '-')
+                for (int i = 0; i < strlen(num2); ++i)
+                    num2[i] = num2[i + 1];
+            sprintf(ans, "%s", num2);
         }
         else if (!strcmp(str, "mul"))
         {
-            sscanf(buffer, "%s%d%d", str, &a, &b);
-            sprintf(ans, "%d", a * b);
+            sscanf(buffer, "%s%s%s", str, num1, num2); //read the number in string to chack if the input overflow
+            sscanf(buffer, "%s%lld%lld", str, &a, &b); //read in the number
+            if (strlen(num1) >= 19)                    //check if input overflow
+            {                                          // long long range -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807
+                if (strlen(num1) >= 21)                //if string len > 21 exceed the max of long long
+                    overflow = 1;
+                else if (strlen(num1) == 20 && (num1[0] != '-' || a > 0)) //if the strlen == 20 check if the number is negative
+                    overflow = 1;
+                else if (strlen(num1) == 19 && a < 0) //if the strlen == 19 check if the number overflow if overflow the number will resent negative
+                    overflow = 1;
+            }
+            if (strlen(num2) >= 19)
+            {
+                if (strlen(num2) >= 21)
+                    overflow = 1;
+                else if (strlen(num2) == 20 && (num2[0] != '-' || b > 0))
+                    overflow = 1;
+                else if (strlen(num2) == 19 && b < 0)
+                    overflow = 1;
+            }
+            if (overflow)
+                sprintf(ans, "input overflow");
+            else
+            {
+                x = a * b;
+                if (a != 0 && x / a != b)
+                {
+                    if ((a > 0 && b > 0) || (a < 0 && b < 0))
+                        sprintf(ans, "output overflow");
+                    else
+                        sprintf(ans, "output underflow");
+                }
+                else
+                    sprintf(ans, "%lld", a * b);
+            }
         }
         else if (!strcmp(buffer, "kill"))
         {
@@ -112,6 +187,7 @@ int main(int argc, char const *argv[])
             sprintf(ans, "Hello");
         }
         send(new_socket, ans, strlen(ans), 0);
+        overflow = 0;
     }
 
     return 0;
